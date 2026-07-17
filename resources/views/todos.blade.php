@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mazizz To-Do List</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎯</text></svg>">
+    <title>Premium To-Do List Plus</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     
     <style>
-        /* Kustomisasi gaya agar terlihat lebih modern dan clean */
         .gradient-text {
             background: linear-gradient(45deg, #0d6efd, #0dcaf0);
             -webkit-background-clip: text;
@@ -21,9 +19,12 @@
             border-radius: 16px !important;
             transition: all 0.3s ease;
         }
+        /* PERBAIKAN: Memaksa scrollbar horizontal aktif & mulus di iOS */
         .table-responsive {
             border-radius: 12px;
-            overflow: hidden;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch; /* Membuat swipe di iPhone terasa ringan/smooth */
+            width: 100%;
         }
         .form-control, .form-select {
             border-radius: 8px;
@@ -52,19 +53,16 @@
     @php
         $today = date('Y-m-d');
         
-        // Logika Peringatan Batas Waktu
         $urgentCount = $todos->filter(function($todo) use ($today) {
             return $todo->due_date && $todo->due_date <= $today && $todo->status != 'completed';
         })->count();
 
-        // Logika Hitung Progress Statistik
         $totalTodos = $todos->count();
         $completedTodos = $todos->where('status', 'completed')->count();
         $progressPercentage = $totalTodos > 0 ? round(($completedTodos / $totalTodos) * 100) : 0;
     @endphp
 
     <div class="container py-5" style="max-width: 1140px;">
-        <!-- ALERT PENGINGAT JIKA ADA TUGAS URGENT -->
         @if($urgentCount > 0)
             <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 mb-4 p-3 rounded-4" role="alert">
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
@@ -81,10 +79,9 @@
             </div>
         @endif
 
-        <!-- HEADER & TOGGLE BUTTON -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-clipboard2-check-fill text-primary fs-2"></i>
+                <i class="bi bi-check2-circle text-primary fs-2"></i>
                 <h2 class="fw-bold m-0 gradient-text">MAZIZ To-Do List</h2>
             </div>
             <button id="themeToggle" class="btn btn-outline-primary d-flex align-items-center gap-2 shadow-sm">
@@ -92,7 +89,6 @@
             </button>
         </div>
 
-        <!-- PROGRESS BAR & STATISTIK CARD -->
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body p-4">
                 <div class="row align-items-center">
@@ -144,7 +140,7 @@
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label Feld small fw-semibold">Prioritas</label>
+                                <label class="form-label small fw-semibold">Prioritas</label>
                                 <select name="priority" class="form-select" required>
                                     <option value="low">🟢 Low (Rendah)</option>
                                     <option value="medium" selected>🟡 Medium (Sedang)</option>
@@ -174,7 +170,6 @@
                         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
                             <h5 class="card-title fw-bold m-0 text-body-emphasis"><i class="bi bi-list-task me-2 text-primary"></i>Daftar Tugas Aktif</h5>
                             
-                            <!-- FORM PENCARIAN & FILTER KATEGORI -->
                             <form action="{{ route('todos.index') }}" method="GET" class="d-flex gap-2 align-items-center flex-wrap flex-md-nowrap">
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search text-muted"></i></span>
@@ -202,7 +197,8 @@
                             </div>
                         @else
                             <div class="table-responsive border">
-                                <table class="table table-hover align-middle mb-0">
+                                <!-- PERBAIKAN: Menambahkan min-width agar tabel memiliki ruang horizontal dan memicu efek swipe di screen kecil -->
+                                <table class="table table-hover align-middle mb-0" style="min-width: 750px;">
                                     <thead class="table-dark">
                                         <tr>
                                             <th class="ps-3 py-3">Tugas</th>
@@ -227,7 +223,7 @@
                                                 <td>
                                                     @if($todo->priority == 'high') <span class="badge bg-danger-subtle text-danger border px-2 py-1.5"><i class="bi bi-fire me-1"></i>High</span>
                                                     @elseif($todo->priority == 'medium') <span class="badge bg-warning-subtle text-warning-emphasis border px-2 py-1.5"><i class="bi bi-exclamation-circle me-1"></i>Medium</span>
-                                                    @else <span class="badge bg-success_subtle text-success border px-2 py-1.5"><i class="bi bi-arrow-down-short me-1"></i>Low</span>
+                                                    @else <span class="badge bg-success-subtle text-success border px-2 py-1.5"><i class="bi bi-arrow-down-short me-1"></i>Low</span>
                                                     @endif
                                                 </td>
                                                 <td>
@@ -274,7 +270,8 @@
                     <p class="text-muted small m-0"><i class="bi bi-info-circle me-1"></i>Kotak sampah kosong.</p>
                 @else
                     <div class="table-responsive border bg-body">
-                        <table class="table table-sm align-middle mb-0">
+                        <!-- PERBAIKAN: Menambahkan min-width juga pada tabel sampah -->
+                        <table class="table table-sm align-middle mb-0" style="min-width: 600px;">
                             <thead>
                                 <tr class="table-secondary">
                                     <th class="ps-3 py-2">Nama Tugas</th>
@@ -312,10 +309,8 @@
         </div>
     </div>
 
-    <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // DARK MODE CODE
         const btn = document.getElementById('themeToggle');
         const icon = document.getElementById('themeIcon');
         const text = document.getElementById('themeText');
@@ -339,7 +334,6 @@
             updateButtonUI(newTheme);
         });
 
-        // NOTIFICATION CODE
         const urgentCount = {{ $urgentCount }};
         function playNotificationSound() {
             try {
